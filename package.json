@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/osvaldo0222/nodes-ccts/issues"
   },
-  "homepage": "https://github.com/osvaldo0222/nodes-ccts#readme"
+  "homepage": "https://github.com/osvaldo0222/nodes-ccts#readme",
+  "dependencies": {
+    "@abandonware/noble": "^1.9.2-9"
+  }
 }
