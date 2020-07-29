@@ -1,40 +1,15 @@
-const mqttClient = require("./src/services/MqttService");
-const noble = require("@abandonware/noble");
-const { CCTS_CONSTANTS } = require("./src/utils/Constants");
+//Entry point of the application
+const Application = require("./src/App").Application;
 
-let dev = {};
+//Services of the application
+const MqttService = require("./src/services/MqttService");
+const BleService = require("./src/services/BleService");
 
-noble.on("stateChange", async (state) => {
-  if (state === "poweredOn") {
-    await noble.startScanningAsync([], true);
-  }
-});
+//Instance all the services
+const services = {};
+services.MqttService = new MqttService();
+services.BleService = new BleService();
 
-noble.on("discover", (peripheral) => {
-  if (
-    peripheral.advertisement.serviceUuids[0] &&
-    peripheral.advertisement.serviceUuids[0].startsWith(
-      CCTS_CONSTANTS.MSB_64_UUID_CCTS
-    )
-  ) {
-    dev[peripheral.advertisement.serviceUuids[0]] = dev[
-      peripheral.advertisement.serviceUuids[0]
-    ]
-      ? {
-          ...dev[peripheral.advertisement.serviceUuids[0]],
-          txPowerLevel: peripheral.advertisement.txPowerLevel,
-          rssi: peripheral.rssi,
-          timeLeft: Date.now(),
-        }
-      : {
-          uuid: peripheral.advertisement.serviceUuids[0],
-          txPowerLevel: peripheral.advertisement.txPowerLevel,
-          rssi: peripheral.rssi,
-          timeArrived: Date.now(),
-          timeLeft: Date.now(),
-        };
-    console.clear();
-    console.log(dev);
-    mqttClient.publish("/test", JSON.stringify(dev));
-  }
-});
+//Instance and start the application
+const app = new Application();
+app.initialize(services);
