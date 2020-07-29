@@ -1,6 +1,6 @@
 const mqttClient = require("./src/services/MqttService");
 const noble = require("@abandonware/noble");
-const { CCTS_CONSTANTS } = require("../utils/Constants");
+const { CCTS_CONSTANTS } = require("./src/utils/Constants");
 
 let dev = {};
 
