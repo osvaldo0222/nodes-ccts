@@ -1,4 +1,3 @@
-const mqttClient = require("./src/services/MqttService");
 const noble = require("@abandonware/noble");
 const { CCTS_CONSTANTS } = require("../utils/Constants");
 
@@ -35,6 +34,5 @@ noble.on("discover", (peripheral) => {
         };
     console.clear();
     console.log(dev);
-    mqttClient.publish("/test", JSON.stringify(dev));
   }
 });
