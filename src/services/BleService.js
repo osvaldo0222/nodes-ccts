@@ -15,7 +15,7 @@ const BleService = function () {
         peripheral.advertisement.serviceUuids[0] &&
         peripheral.advertisement.serviceUuids[0].startsWith(cctsUuidPart)
       ) {
-        this.dev[peripheral.advertisement.serviceUuids[0]] = dev[
+        this.dev[peripheral.advertisement.serviceUuids[0]] = this.dev[
           peripheral.advertisement.serviceUuids[0]
         ]
           ? {
