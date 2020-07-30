@@ -4,6 +4,7 @@ const {
     BROKER_PASSWORD,
     BROKER_URL,
     CONFIG_TOPIC,
+    MESSAGE_TOPIC,
     MSB_64_UUID_CCTS,
   },
   NODE_CONSTANTS: { NODE_IDENTIFIER },
@@ -16,14 +17,17 @@ const Application = function () {
     this.services = services;
 
     this.services.MqttService.initialize(
+      (generalMessageTopic = MESSAGE_TOPIC),
       (generalConfigurationTopic = CONFIG_TOPIC),
-      (nodeIdentifier = NODE_IDENTIFIER),
-      (brokerUrl = BROKER_URL),
-      (brokerUsername = BROKER_USERNAME),
-      (brokerPassword = BROKER_PASSWORD)
+      (nodeIdentifierInit = NODE_IDENTIFIER),
+      (brokerUrlInit = BROKER_URL),
+      (brokerUsernameInit = BROKER_USERNAME),
+      (brokerPasswordInit = BROKER_PASSWORD)
     );
 
     this.services.BleService.initialize((cctsUuidPart = MSB_64_UUID_CCTS));
+
+    this.services.CCTSService.initialize();
   };
 };
 

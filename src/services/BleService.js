@@ -20,13 +20,11 @@ const BleService = function () {
         ]
           ? {
               ...this.dev[peripheral.advertisement.serviceUuids[0]],
-              txPowerLevel: peripheral.advertisement.txPowerLevel,
               rssi: peripheral.rssi,
               timeLeft: Date.now(),
             }
           : {
               uuid: peripheral.advertisement.serviceUuids[0],
-              txPowerLevel: peripheral.advertisement.txPowerLevel,
               rssi: peripheral.rssi,
               timeArrived: Date.now(),
               timeLeft: Date.now(),
@@ -35,6 +33,10 @@ const BleService = function () {
         console.log(this.dev);
       }
     });
+  };
+
+  this.deleteDev = (serviceUuids) => {
+    delete this.dev[serviceUuids];
   };
 };
 

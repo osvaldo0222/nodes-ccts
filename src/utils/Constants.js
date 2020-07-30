@@ -4,6 +4,7 @@ exports.CCTS_CONSTANTS = {
   BROKER_USERNAME: "ccts",
   BROKER_PASSWORD: "ccts",
   CONFIG_TOPIC: "/config",
+  MESSAGE_TOPIC: "/nodes",
 };
 
 exports.NODE_CONSTANTS = {
