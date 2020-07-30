@@ -7,7 +7,7 @@ const {
     MESSAGE_TOPIC,
     MSB_64_UUID_CCTS,
   },
-  NODE_CONSTANTS: { NODE_IDENTIFIER },
+  NODE_CONSTANTS: { NODE_IDENTIFIER, DEVICE_FORGET_TIME },
 } = require("./utils/Constants");
 
 const Application = function () {
@@ -27,7 +27,9 @@ const Application = function () {
 
     this.services.BleService.initialize((cctsUuidPart = MSB_64_UUID_CCTS));
 
-    this.services.CCTSService.initialize();
+    this.services.CCTSService.initialize(
+      (deviceForgetTime = DEVICE_FORGET_TIME)
+    );
   };
 };
 

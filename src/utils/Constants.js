@@ -9,4 +9,5 @@ exports.CCTS_CONSTANTS = {
 
 exports.NODE_CONSTANTS = {
   NODE_IDENTIFIER: "NODE-1",
+  DEVICE_FORGET_TIME: 10000, //Miliseconds
 };

@@ -6,6 +6,7 @@ const BleService = function () {
   this.initialize = (cctsUuidPart = "1ad73f5c2d4845e9") => {
     noble.on("stateChange", async (state) => {
       if (state === "poweredOn") {
+        console.log("[...] Starting BLE scanning");
         await noble.startScanningAsync([], true);
       }
     });
@@ -29,14 +30,16 @@ const BleService = function () {
               timeArrived: Date.now(),
               timeLeft: Date.now(),
             };
-        console.clear();
-        console.log(this.dev);
       }
     });
   };
 
   this.deleteDev = (serviceUuids) => {
     delete this.dev[serviceUuids];
+  };
+
+  this.getDev = () => {
+    return this.dev;
   };
 };
 

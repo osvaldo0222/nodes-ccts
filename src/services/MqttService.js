@@ -85,7 +85,6 @@ const MqttService = function () {
   };
 
   this.sendMessage = (topic = this.messageTopic, message = "") => {
-    console.log(topic, message);
     if (this.mqttClient) {
       this.mqttClient.publish(topic, message, { qos: 1 }, (err) => {
         //Sucess or error here
