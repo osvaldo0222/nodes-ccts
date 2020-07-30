@@ -1,53 +1,33 @@
 const mqtt = require("mqtt");
+const { mqttProps, cctsProps } = require("../shared/Props");
 
 const MqttService = function () {
-  this.nodeIdentifier = null;
-  this.brokerCredentials = {
-    username: null,
-    password: null,
-  };
-  this.brokerUrl = null;
-  this.configTopic = null;
-  this.messageTopic = null;
-  this.locality = null;
-  this.mqttClient = null;
+  this.initialize = () => {
+    mqttProps.CONFIG_TOPIC = `${cctsProps.CONFIG_TOPIC_GENERAL}/${mqttProps.NODE_IDENTIFIER}`;
 
-  this.initialize = (
-    generalMessageTopic = "/nodes",
-    generalConfigurationTopic = "/config",
-    nodeIdentifier = "NODE-#",
-    brokerUrl = "tcp://192.168.0.12:1883",
-    brokerUsername = "ccts",
-    brokerPassword = "ccts"
-  ) => {
-    this.nodeIdentifier = nodeIdentifier;
-    this.brokerCredentials.username = brokerUsername;
-    this.brokerCredentials.password = brokerPassword;
-    this.brokerUrl = brokerUrl;
-    this.configTopic = `${generalConfigurationTopic}/${this.nodeIdentifier}`;
-
-    this.mqttClient = mqtt.connect(this.brokerUrl, {
-      clientId: this.nodeIdentifier,
-      ...this.brokerCredentials,
+    mqttProps.mqttCLient = mqtt.connect(cctsProps.BROKER_URL, {
+      clientId: mqttProps.NODE_IDENTIFIER,
+      username: cctsProps.BROKER_USERNAME,
+      password: cctsProps.BROKER_PASSWORD,
       will: {
-        topic: this.configTopic,
-        payload: this.generateMqttMessage(700, this.nodeIdentifier, null),
+        topic: mqttProps.CONFIG_TOPIC,
+        payload: this.generateMqttMessage(700, mqttProps.NODE_IDENTIFIER, null),
         qos: 1,
       },
     });
 
-    this.mqttClient.on("connect", () => {
-      this.mqttClient.subscribe(this.configTopic, (err) => {
+    mqttProps.mqttCLient.on("connect", () => {
+      mqttProps.mqttCLient.subscribe(mqttProps.CONFIG_TOPIC, (err) => {
         if (!err) {
           this.sendMessage(
-            this.configTopic,
-            this.generateMqttMessage(701, this.nodeIdentifier, null)
+            mqttProps.CONFIG_TOPIC,
+            this.generateMqttMessage(701, mqttProps.NODE_IDENTIFIER, null)
           );
         }
       });
     });
 
-    this.mqttClient.on("message", function (topic, message) {
+    mqttProps.mqttCLient.on("message", function (topic, message) {
       let msgObj = JSON.parse(message.toString());
       let code = msgObj.code;
       if (code) {
@@ -58,17 +38,17 @@ const MqttService = function () {
           case 701:
             console.log(
               "[...] Node is connected to the broker on",
-              brokerUrl,
+              cctsProps.BROKER_URL,
               "with identifier",
-              nodeIdentifier
+              mqttProps.NODE_IDENTIFIER
             );
             break;
           case 702:
-            this.locality = msgObj.data;
-            this.messageTopic = `${generalMessageTopic}/${this.locality.localityName}/${this.locality.nodeDescription}`
+            mqttProps.LOCALITY = msgObj.data;
+            mqttProps.MESSAGE_TOPIC = `${cctsProps.MESSAGE_TOPIC_GENERAL}/${mqttProps.LOCALITY.localityName}/${mqttProps.LOCALITY.nodeDescription}`
               .toLowerCase()
               .replace(" ", "");
-            console.log("[...] Node data topic is", this.messageTopic);
+            console.log("[...] Node data topic is", mqttProps.MESSAGE_TOPIC);
             break;
           case 704:
             //NODE NOT FOUND
@@ -84,9 +64,10 @@ const MqttService = function () {
     });
   };
 
-  this.sendMessage = (topic = this.messageTopic, message = "") => {
-    if (this.mqttClient) {
-      this.mqttClient.publish(topic, message, { qos: 1 }, (err) => {
+  this.sendMessage = (topic = mqttProps.MESSAGE_TOPIC, message = "") => {
+    console.log(topic, message);
+    if (mqttProps.mqttCLient) {
+      mqttProps.mqttCLient.publish(topic, message, { qos: 1 }, (err) => {
         //Sucess or error here
       });
     }
@@ -94,7 +75,7 @@ const MqttService = function () {
 
   this.generateMqttMessage = (
     code = 705,
-    nodeIdentifier = this.nodeIdentifier,
+    nodeIdentifier = mqttProps.NODE_IDENTIFIER,
     data = null
   ) => {
     return JSON.stringify({

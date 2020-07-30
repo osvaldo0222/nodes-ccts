@@ -1,9 +1,8 @@
 const noble = require("@abandonware/noble");
+const { bleProps, cctsProps } = require("../shared/Props");
 
 const BleService = function () {
-  this.dev = {};
-
-  this.initialize = (cctsUuidPart = "1ad73f5c2d4845e9") => {
+  this.initialize = () => {
     noble.on("stateChange", async (state) => {
       if (state === "poweredOn") {
         console.log("[...] Starting BLE scanning");
@@ -14,13 +13,14 @@ const BleService = function () {
     noble.on("discover", (peripheral) => {
       if (
         peripheral.advertisement.serviceUuids[0] &&
-        peripheral.advertisement.serviceUuids[0].startsWith(cctsUuidPart)
+        peripheral.advertisement.serviceUuids[0].startsWith(
+          cctsProps.MSB_64_UUID_CCTS
+        )
       ) {
-        this.dev[peripheral.advertisement.serviceUuids[0]] = this.dev[
-          peripheral.advertisement.serviceUuids[0]
-        ]
+        bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = bleProps
+          .DEVICES[peripheral.advertisement.serviceUuids[0]]
           ? {
-              ...this.dev[peripheral.advertisement.serviceUuids[0]],
+              ...bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]],
               rssi: peripheral.rssi,
               timeLeft: Date.now(),
             }
@@ -35,11 +35,11 @@ const BleService = function () {
   };
 
   this.deleteDev = (serviceUuids) => {
-    delete this.dev[serviceUuids];
+    delete bleProps.DEVICES[serviceUuids];
   };
 
   this.getDev = () => {
-    return this.dev;
+    return bleProps.DEVICES;
   };
 };
 
