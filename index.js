@@ -10,7 +10,10 @@ const CCTSService = require("./src/services/CCTSService");
 const services = {};
 services.MqttService = new MqttService();
 services.BleService = new BleService();
-services.CCTSService = new CCTSService(BleService, MqttService);
+services.CCTSService = new CCTSService({
+  BleService: services.BleService,
+  MqttService: services.MqttService,
+});
 
 //Instance and start the application
 const app = new Application();
