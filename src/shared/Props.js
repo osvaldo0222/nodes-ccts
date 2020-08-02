@@ -5,6 +5,8 @@ module.exports.cctsProps = {
   BROKER_PASSWORD: "ccts",
   CONFIG_TOPIC_GENERAL: "/config",
   MESSAGE_TOPIC_GENERAL: "/nodes",
+  WEB_SERVER_STATUS_TOPIC: "/web-server-status",
+  WEB_SERVER_STATUS: false,
 };
 
 module.exports.mqttProps = {
@@ -13,6 +15,7 @@ module.exports.mqttProps = {
   MESSAGE_TOPIC: null,
   LOCALITY: null,
   mqttCLient: null,
+  qos: 1,
 };
 
 module.exports.bleProps = {

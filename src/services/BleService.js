@@ -1,12 +1,17 @@
+const logger = require("log4js").getLogger();
 const noble = require("@abandonware/noble");
 const { bleProps, cctsProps } = require("../shared/Props");
 
 const BleService = function () {
   this.initialize = () => {
     noble.on("stateChange", async (state) => {
+      logger.info(`BLE adapter: ${state}`);
       if (state === "poweredOn") {
-        console.log("[...] Starting BLE scanning");
+        logger.info("Starting BLE scanning...");
         await noble.startScanningAsync([], true);
+      } else {
+        logger.error(`BLE adapter must be poweredOn for received.: ${state}`);
+        logger.error(`BLE adapter actual state: ${state}`);
       }
     });
 
@@ -33,14 +38,16 @@ const BleService = function () {
       }
     });
   };
-
-  this.deleteDev = (serviceUuids) => {
-    delete bleProps.DEVICES[serviceUuids];
-  };
-
-  this.getDev = () => {
-    return bleProps.DEVICES;
-  };
 };
 
+function deleteDev(serviceUuid) {
+  delete bleProps.DEVICES[serviceUuid];
+}
+
+function getDev() {
+  return bleProps.DEVICES;
+}
+
 module.exports = BleService;
+module.exports.deleteDev = deleteDev;
+module.exports.getDev = getDev;

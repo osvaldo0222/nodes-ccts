@@ -4,9 +4,9 @@ const Application = function () {
   this.initialize = (services = {}) => {
     this.services = services;
 
-    this.services.MqttService.initialize();
-
     this.services.BleService.initialize();
+
+    this.services.MqttService.initialize();
 
     this.services.CCTSService.initialize();
   };
