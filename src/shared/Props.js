@@ -1,6 +1,6 @@
 module.exports.cctsProps = {
   MSB_64_UUID_CCTS: "1ad73f5c2d4845e9",
-  BROKER_URL: "tcp://192.168.0.12:1883",
+  BROKER_URL: "tcp://0.tcp.ngrok.io:19819",
   BROKER_USERNAME: "ccts",
   BROKER_PASSWORD: "ccts",
   CONFIG_TOPIC_GENERAL: "/config",
