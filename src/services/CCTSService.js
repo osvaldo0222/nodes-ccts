@@ -30,8 +30,8 @@ const CCTSService = function () {
         sendMessage((topic = mqttProps.MESSAGE_TOPIC), (message = message));
       }
 
-      console.clear();
-      console.log(bleProps.DEVICES);
+      /* console.clear();
+       console.log(bleProps.DEVICES);*/
     }, 1000);
   };
 };
