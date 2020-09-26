@@ -41,7 +41,21 @@ const BootstrapService = function () {
                 });
 
                 //Restarting network services
-                exec(`service networking restart`, (err, stdout, stderr) => {
+                exec(`service networking restart && sudo systemctl daemon-reload`, (err, stdout, stderr) => {
+                    if (err) {
+                        console.error(err)
+                    }
+                });
+
+                //Restarting gprs
+                exec(`ifdown gprs`, (err, stdout, stderr) => {
+                    if (err) {
+                        console.error(err)
+                    }
+                });
+
+                //Power on gprs
+                exec(`ifup gprs`, (err, stdout, stderr) => {
                     if (err) {
                         console.error(err)
                     }
