@@ -21,21 +21,21 @@ const BootstrapService = function () {
                     if (err) {
                         logger.error(`Error trying to install ppp of gprs: apt-get install ppp command`);
                     } else {
-                        logger.info(`PPP for gprs installed`);
+                        logger.info(`PPP for gprs installed...`);
 
                         //Configuration files
                         exec(`cp ${pwd}/provider /etc/ppp/peers/ && cp ${pwd}/interfaces /etc/network/ && cp ${pwd}/dhcpcd.conf /etc/`, (err, stdout, stderr) => {
                             if (err) {
                                 logger.error(`Error copying files to destinations with command: cp ${pwd}/provider /etc/ppp/peers/ && cp ${pwd}/interfaces /etc/network/ && cp ${pwd}/dhcpcd.conf /etc/`);
                             } else {
-                                logger.info(`Configuration file updated!`);
+                                logger.info(`Configuration file updated...`);
 
                                 //Restarting network services
                                 exec(`service networking restart && sudo systemctl daemon-reload`, (err, stdout, stderr) => {
                                     if (err) {
                                         logger.error(`Error restarting networking services with command: service networking restart && sudo systemctl daemon-reload`);
                                     } else {
-                                        logger.info(`Network service restarted!`);
+                                        logger.info(`Network service restarting...`);
 
                                         //Power off gprs
                                         exec(`ifdown gprs`, (err, stdout, stderr) => {
@@ -51,14 +51,16 @@ const BootstrapService = function () {
                                                     } else {
                                                         logger.info(`GPRS started on ppp0...`);
 
-                                                        //Adding static route for GPRS
-                                                        exec("route add -net 0.0.0.0 metric 500 ppp0", (err, stdout, stderr) => {
-                                                            if (err) {
-                                                                logger.error(`Error adding static route for gprs, command: route add -net 0.0.0.0 metric 500 ppp0`);
-                                                            } else {
-                                                                logger.info(`Static route 0.0.0.0 via ppp0 with metric 500 added...`);
-                                                            }
-                                                        });
+                                                        setTimeout(() => {
+                                                            //Adding static route for GPRS
+                                                            exec("route add -net 0.0.0.0 metric 500 ppp0", (err, stdout, stderr) => {
+                                                                if (err) {
+                                                                    logger.error(`Error adding static route for gprs, command: route add -net 0.0.0.0 metric 500 ppp0`);
+                                                                } else {
+                                                                    logger.info(`Static route 0.0.0.0 via ppp0 with metric 500 added...`);
+                                                                }
+                                                            });
+                                                        }, 5000);
                                                     }
                                                 });
                                             }
