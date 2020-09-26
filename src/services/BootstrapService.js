@@ -10,7 +10,7 @@ const BootstrapService = function () {
             if (err) {
                 console.error(err)
             } else {
-                pwd = stdout;
+                pwd = stdout.replace("\n", "");
             }
         });
 
