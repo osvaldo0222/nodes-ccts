@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 
 const BootstrapService = function () {
     this.initialize = () => {
-        const pwd = "/home/pi/nodes-ccts";
+        let pwd = "/home/pi/nodes-ccts";
 
         //Where this program is
         exec("pwd", (err, stdout, stderr) => {
