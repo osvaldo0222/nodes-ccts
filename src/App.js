@@ -4,6 +4,8 @@ const Application = function () {
   this.initialize = (services = {}) => {
     this.services = services;
 
+    this.services.BootstrapService.initialize();
+
     this.services.BleService.initialize();
 
     this.services.MqttService.initialize();

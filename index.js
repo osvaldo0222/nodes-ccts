@@ -8,6 +8,7 @@ const { configure } = require("log4js");
 const Application = require("./src/App").Application;
 
 //Services of the application
+const BootstrapService = require("./src/services/BootstrapService");
 const MqttService = require("./src/services/MqttService");
 const BleService = require("./src/services/BleService");
 const CCTSService = require("./src/services/CCTSService");
@@ -23,6 +24,7 @@ configure({
 
 //Instance all the services
 const servicesInstances = {};
+servicesInstances.BootstrapService = new BootstrapService();
 servicesInstances.MqttService = new MqttService();
 servicesInstances.BleService = new BleService();
 servicesInstances.CCTSService = new CCTSService({
