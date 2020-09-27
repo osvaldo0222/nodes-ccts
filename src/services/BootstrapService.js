@@ -60,7 +60,7 @@ const BootstrapService = function () {
                                                                     logger.info(`Static route 0.0.0.0 via ppp0 with metric 500 added...`);
                                                                 }
                                                             });
-                                                        }, 5000);
+                                                        }, 10000);
                                                     }
                                                 });
                                             }
