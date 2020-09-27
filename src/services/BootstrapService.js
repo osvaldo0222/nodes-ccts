@@ -1,80 +1,107 @@
 //For shell scripting
-const { exec } = require('child_process');
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
+const Gpio = require("onoff").Gpio;
 const logger = require("log4js").getLogger();
 
 const BootstrapService = function () {
     this.initialize = () => {
-        let pwd = "/home/pi/nodes-ccts";
+        configGPRS();
+    };
+};
 
-        logger.info(`Boostraping services...`);
+/**
+ * Delay function
+ * @param {*} ms 
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-        //Where this program is
-        exec("pwd", (err, stdout, stderr) => {
-            if (err) {
-                logger.error(`Error trying to get the path of nodes ccts: pwd command`);
-            } else {
-                pwd = stdout.replace("\n", "");
-                logger.info(`Nodes CCTS program path: ${pwd}`);
+/**
+ * Function to check if GPRS if active.
+ */
+async function checkGPRS() {
+    return await exec("ifconfig ppp0");
+};
 
-                //Check if ppp is installed
-                exec("apt-get install ppp", (err, stdout, stderr) => {
-                    if (err) {
-                        logger.error(`Error trying to install ppp of gprs: apt-get install ppp command`);
-                    } else {
-                        logger.info(`PPP for gprs installed...`);
+/**
+ * Power key for gprs module.
+ * On GPIO 4 (pin 7) as output, write a 0, then hold for 4 seg and write a 1.
+ * 
+ */
+async function toogleGPRSModule() {
+    //GPRS Power Key
+    let gsmPowerPin = new Gpio(4, 'out');
+    gsmPowerPin.writeSync(0);
+    await sleep(4000);
+    gsmPowerPin.writeSync(1);
+    gsmPowerPin.unexport();
 
-                        //Configuration files
-                        exec(`cp ${pwd}/provider /etc/ppp/peers/ && cp ${pwd}/interfaces /etc/network/ && cp ${pwd}/dhcpcd.conf /etc/`, (err, stdout, stderr) => {
-                            if (err) {
-                                logger.error(`Error copying files to destinations with command: cp ${pwd}/provider /etc/ppp/peers/ && cp ${pwd}/interfaces /etc/network/ && cp ${pwd}/dhcpcd.conf /etc/`);
-                            } else {
-                                logger.info(`Configuration file updated...`);
+    return true;
+};
 
-                                //Restarting network services
-                                exec(`service networking restart && sudo systemctl daemon-reload`, (err, stdout, stderr) => {
-                                    if (err) {
-                                        logger.error(`Error restarting networking services with command: service networking restart && sudo systemctl daemon-reload`);
-                                    } else {
-                                        logger.info(`Network service restarting...`);
+/**
+ * Function to configure GPRS module and PPP0.
+ * 
+ */
+async function configGPRS() {
+    logger.info("Configuring GPRS...");
 
-                                        //Power off gprs
-                                        exec(`ifdown gprs`, (err, stdout, stderr) => {
-                                            if (err) {
-                                                logger.error(`GPRS already down or wasn't configured, command: ifdown gprs`);
-                                            } else {
-                                                logger.info(`GPRS stopped...`);
+    let configure = false;
+    let toogle = false;
 
-                                                //Power on gprs
-                                                exec(`ifup gprs`, (err, stdout, stderr) => {
-                                                    if (err) {
-                                                        logger.error(`GPRS already up or wasn't configured, command: ifup gprs`);
-                                                    } else {
-                                                        logger.info(`GPRS started on ppp0...`);
+    while (!configure) {
+        await checkGPRS().then(async ({ stdout, stderr }) => {
+            configure = await exec("route add -net 0.0.0.0 metric 400 ppp0").then(({ stdout }) => {
+                logger.info("Static route added with metric 400 via ppp0...");
+                logger.info("GPRS is already configured...");
+                return true;
+            }).catch(() => {
+                logger.error(`Unabled to create static route: route add -net 0.0.0.0 metric 400 ppp0`);
+                return false;
+            });
+        }).catch(async () => {
+            if (!toogle) {
+                logger.info("Powering on GPRS...");
+                toogle = await toogleGPRSModule();
+                logger.info("GPRS Module is up. Configuring....");
 
-                                                        setTimeout(() => {
-                                                            //Adding static route for GPRS
-                                                            exec("route add -net 0.0.0.0 metric 500 ppp0", (err, stdout, stderr) => {
-                                                                if (err) {
-                                                                    logger.error(`Error adding static route for gprs, command: route add -net 0.0.0.0 metric 500 ppp0`);
-                                                                } else {
-                                                                    logger.info(`Static route 0.0.0.0 via ppp0 with metric 500 added...`);
-                                                                }
-                                                            });
-                                                        }, 10000);
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-                                });
+                //Configuring
+                let pwd = await exec("pwd").then(({ stdout }) => {
+                    return stdout.replace("\n", "");
+                }).catch(() => {
+                    return "/home/pi/nodes-ccts";
+                });
 
-                            }
-                        });
-                    }
+                await exec("apt-get install ppp").then(({ stdout }) => {
+                    logger.info("PPP installed for gprs...");
+                }).catch(() => {
+                    logger.error("PPP can't be installed for gprs: apt-get install ppp");
+                });
+
+                await exec(`cp ${pwd}/provider /etc/ppp/peers/ && cp ${pwd}/interfaces /etc/network/ && cp ${pwd}/dhcpcd.conf /etc/`).then(({ stdout }) => {
+                    logger.info("Configuration files updated...");
+                }).catch(() => {
+                    logger.error(`Unabled to updated config files: cp ${pwd}/provider /etc/ppp/peers/ && cp ${pwd}/interfaces /etc/network/ && cp ${pwd}/dhcpcd.conf /etc/`);
+                });
+
+                await exec(`service networking restart && sudo systemctl daemon-reload`).then(({ stdout }) => {
+                    logger.info("Networking services restarted...");
+                }).catch(() => {
+                    logger.error(`Unabled to restart networking services: service networking restart && sudo systemctl daemon-reload`);
+                });
+
+                await exec("ifdown gprs && ifup gprs").then(({ stdout }) => {
+                    logger.info("GPRS interface started...");
+                }).catch(() => {
+                    logger.error(`Unabled to start gprs interface: ifdown gprs && ifup gprs`);
                 });
             }
         });
-    };
-};
+
+        await sleep(10000);
+    }
+}
 
 module.exports = BootstrapService;

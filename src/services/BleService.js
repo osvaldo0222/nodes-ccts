@@ -22,25 +22,42 @@ const BleService = function () {
           cctsProps.MSB_64_UUID_CCTS
         )
       ) {
-        bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = bleProps
-          .DEVICES[peripheral.advertisement.serviceUuids[0]]
-          ? {
+        if (bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]]) {
+          bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = {
+            ...bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]],
+            rssi: peripheral.rssi,
+            timeLeft: Date.now(),
+          };
+        } else {
+          logger.info(`User with uuid ${peripheral.advertisement.serviceUuids[0]} in range...`);
+          bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = {
+            uuid: peripheral.advertisement.serviceUuids[0],
+            rssi: peripheral.rssi,
+            timeArrived: Date.now(),
+            timeLeft: Date.now(),
+          };
+        }
+
+        /*  bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = bleProps
+            .DEVICES[peripheral.advertisement.serviceUuids[0]]
+            ? {
               ...bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]],
               rssi: peripheral.rssi,
               timeLeft: Date.now(),
             }
-          : {
+            : {
               uuid: peripheral.advertisement.serviceUuids[0],
               rssi: peripheral.rssi,
               timeArrived: Date.now(),
               timeLeft: Date.now(),
-            };
+            };*/
       }
     });
   };
 };
 
 function deleteDev(serviceUuid) {
+  logger.warn(`User wit uuid ${serviceUuid} out of range...`);
   delete bleProps.DEVICES[serviceUuid];
 }
 
