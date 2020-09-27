@@ -19,8 +19,6 @@ function sleep(ms) {
  * Function to check if GPRS if active.
  */
 async function checkGPRS() {
-    logger.info("Checking if gprs already configured...");
-
     return await exec("ifconfig ppp0");
 };
 
@@ -43,23 +41,33 @@ async function toogleGPRSModule() {
 };
 
 async function run() {
-    let configure = false;
-    let toogle = false;
-
-    while (!configure) {
-        await checkGPRS().then(({ stdout, stderr }) => {
-            console.log("good")
-            configure = true;
-        }).catch(async () => {
-            if (!toogle) {
-                logger.warn("Powering on GPRS...");
-                toogle = await toogleGPRSModule();
-                logger.info("GPRS is up....");
-            }
+    /* let configure = false;
+     let toogle = false;
+ 
+     while (!configure) {
+         await checkGPRS().then(({ stdout, stderr }) => {
+             console.log("good")
+             configure = true;
+         }).catch(async () => {
+             if (!toogle) {
+                 logger.warn("Powering on GPRS...");
+                 toogle = await toogleGPRSModule();
+                 logger.info("GPRS is up....");
+             }
+         });
+ 
+         await sleep(10000);
+     }*/
+    while (true) {
+        await checkGPRS().then(async ({ stdout, stderr }) => {
+            console.log("then")
+        }).catch(async (reason) => {
+            console.log("catch")
         });
 
         await sleep(10000);
     }
+
 }
 
 run();

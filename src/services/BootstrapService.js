@@ -50,16 +50,21 @@ async function configGPRS() {
 
     let configure = false;
     let toogle = false;
+    let count = 0;
 
     while (!configure) {
         await checkGPRS().then(async ({ stdout, stderr }) => {
-            configure = await exec("route add -net 0.0.0.0 metric 400 ppp0").then(({ stdout }) => {
+            await exec("route add -net 0.0.0.0 metric 400 ppp0").then(() => {
                 logger.info("Static route added with metric 400 via ppp0...");
                 logger.info("GPRS is already configured...");
-                return true;
-            }).catch(() => {
+                configure = true;
+            }).catch((reason) => {
+                if (reason.includes("File exists")) {
+                    logger.info("GPRS is already configured...");
+                    configure = true;
+                }
                 logger.error(`Unabled to create static route: route add -net 0.0.0.0 metric 400 ppp0`);
-                return false;
+                configure = false;
             });
         }).catch(async () => {
             if (!toogle) {
@@ -98,9 +103,15 @@ async function configGPRS() {
                     logger.error(`Unabled to start gprs interface: ifdown gprs && ifup gprs`);
                 });
             }
+
+            if (count > 30) {
+                count = 0;
+                toogle = false;
+            }
         });
 
         await sleep(10000);
+        count++;
     }
 }
 
