@@ -37,20 +37,6 @@ const BleService = function () {
             timeLeft: Date.now(),
           };
         }
-
-        /*  bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = bleProps
-            .DEVICES[peripheral.advertisement.serviceUuids[0]]
-            ? {
-              ...bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]],
-              rssi: peripheral.rssi,
-              timeLeft: Date.now(),
-            }
-            : {
-              uuid: peripheral.advertisement.serviceUuids[0],
-              rssi: peripheral.rssi,
-              timeArrived: Date.now(),
-              timeLeft: Date.now(),
-            };*/
       }
     });
   };
