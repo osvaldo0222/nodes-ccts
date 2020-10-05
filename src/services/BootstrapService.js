@@ -51,6 +51,7 @@ async function configGPRS() {
     let configure = false;
     let toogle = false;
     let count = 0;
+    let countToIncreaseTime = 1;
 
     while (!configure) {
         await checkGPRS().then(async ({ stdout, stderr }) => {
@@ -107,8 +108,13 @@ async function configGPRS() {
             if (count > 30) {
                 count = 0;
                 toogle = false;
+                countToIncreaseTime++;
             }
         });
+
+        if (countToIncreaseTime >= 10) {
+            break;
+        }
 
         await sleep(10000);
         count++;

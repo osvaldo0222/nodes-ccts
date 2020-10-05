@@ -1,6 +1,17 @@
 const logger = require("log4js").getLogger();
 const noble = require("@abandonware/noble");
-const { bleProps, cctsProps } = require("../shared/Props");
+const { cctsProps } = require("../shared/Props");
+const Datastore = require("nedb");
+const bleDB = new Datastore({
+  filename: "BleDB.db", autoload: true, onload: (err) => {
+    if (err) {
+      logger.error("Error loading BLE-DB...");
+    } else {
+      logger.info("Loading databases...");
+      bleDB.persistence.compactDatafile();
+    }
+  }
+});
 
 const BleService = function () {
   this.initialize = () => {
@@ -22,35 +33,58 @@ const BleService = function () {
           cctsProps.MSB_64_UUID_CCTS
         )
       ) {
-        if (bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]]) {
-          bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = {
-            ...bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]],
-            rssi: peripheral.rssi,
-            timeLeft: Date.now(),
-          };
-        } else {
-          logger.info(`User with uuid ${peripheral.advertisement.serviceUuids[0]} in range...`);
-          bleProps.DEVICES[peripheral.advertisement.serviceUuids[0]] = {
-            uuid: peripheral.advertisement.serviceUuids[0],
-            rssi: peripheral.rssi,
-            timeArrived: Date.now(),
-            timeLeft: Date.now(),
-          };
-        }
+        bleDB.find({ uuid: peripheral.advertisement.serviceUuids[0] }, (err, docs) => {
+          if (err) {
+            logger.error(`Error finding user with uuid: ${peripheral.advertisement.serviceUuids[0]}...`);
+          } else {
+            if (docs.length === 0) {
+              bleDB.insert({
+                uuid: peripheral.advertisement.serviceUuids[0],
+                rssi: peripheral.rssi,
+                timeArrived: Date.now(),
+                timeLeft: Date.now(),
+              }, (err, newDoc) => {
+                if (err) {
+                  logger.error(`Error adding user with uuid: ${peripheral.advertisement.serviceUuids[0]}...`);
+                }
+                logger.info(`User with uuid ${peripheral.advertisement.serviceUuids[0]} in range...`);
+              });
+            } else {
+              bleDB.update({ uuid: peripheral.advertisement.serviceUuids[0] }, {
+                $set: {
+                  rssi: peripheral.rssi,
+                  timeLeft: Date.now()
+                }
+              }
+                , {}, (err, numReplaced) => {
+                  if (err) {
+                    logger.error(`Error updating user with uuid: ${peripheral.advertisement.serviceUuids[0]}...`);
+                  }
+                  bleDB.persistence.compactDatafile();
+                });
+            }
+          }
+        });
       }
     });
   };
 };
 
 function deleteDev(serviceUuid) {
-  logger.warn(`User wit uuid ${serviceUuid} out of range...`);
-  delete bleProps.DEVICES[serviceUuid];
+  bleDB.remove({ uuid: serviceUuid }, {}, (err, numRemoved) => {
+    if (err) {
+      logger.error(`Error removing user with uuid ${serviceUuid}`);
+    }
+
+    logger.warn(`User wit uuid ${serviceUuid} out of range...`);
+    bleDB.persistence.compactDatafile();
+  });
 }
 
-function getDev() {
-  return bleProps.DEVICES;
+function getBleDB() {
+  return bleDB;
 }
 
 module.exports = BleService;
 module.exports.deleteDev = deleteDev;
-module.exports.getDev = getDev;
+module.exports.getBleDB = getBleDB;

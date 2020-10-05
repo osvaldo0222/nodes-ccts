@@ -27,10 +27,7 @@ const servicesInstances = {};
 servicesInstances.BootstrapService = new BootstrapService();
 servicesInstances.MqttService = new MqttService();
 servicesInstances.BleService = new BleService();
-servicesInstances.CCTSService = new CCTSService({
-  BleService: servicesInstances.BleService,
-  MqttService: servicesInstances.MqttService,
-});
+servicesInstances.CCTSService = new CCTSService();
 
 //Instance and start the application
 const app = new Application();
