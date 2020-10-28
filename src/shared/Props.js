@@ -1,6 +1,6 @@
 module.exports.cctsProps = {
   MSB_64_UUID_CCTS: "1ad73f5c2d4845e9",
-  BROKER_URL: "tcp://192.168.10.8:1883",
+  BROKER_URL: "tcp://nodes.ccts.systems:1883",
   BROKER_USERNAME: "ccts",
   BROKER_PASSWORD: "ccts",
   CONFIG_TOPIC_GENERAL: "/config",
