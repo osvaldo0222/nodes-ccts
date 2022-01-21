@@ -19,7 +19,7 @@
   "homepage": "https://github.com/osvaldo0222/nodes-ccts#readme",
   "dependencies": {
     "@abandonware/noble": "^1.9.2-9",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.0",
     "mqtt": "^4.1.0",
     "nedb": "^1.8.0",
     "node-banner": "^1.4.0",
